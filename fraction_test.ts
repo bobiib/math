@@ -2,36 +2,23 @@ import { assertAlmostEquals, assertEquals, assertThrows } from "@std/assert";
 import { Fraction } from "./fraction.ts";
 
 Deno.test("fraction of 1/1 is 1.0", () => {
-  // Arrange
   const fraction = new Fraction(1, 1);
-
-  // Act
   const float = fraction.toFloat(0.1);
-
-  // Assert
   assertEquals(float, 1.0);
 });
 
 Deno.test("fraction of 2/3 is roughly 0.67", () => {
-  // Arrange
   const fraction = new Fraction(2, 3);
-
-  // Act
   const float = fraction.toFloat(0.01);
-
-  // Assert
   assertAlmostEquals(float, 0.67);
 });
 
 Deno.test("1/3 + 2/6 = 2/3 is roughly 0.67", () => {
-  // Arrange
   const left = new Fraction(1, 3);
   const right = new Fraction(2, 6);
 
-  // Act
   left.add(right);
 
-  // Assert
   assertAlmostEquals(left.toFloat(0.01), 0.67);
 });
 
@@ -71,9 +58,51 @@ Deno.test("parse: valid expression", () => {
 });
 
 Deno.test("parse: incorrect format throws", () => {
-  assertThrows(() => Fraction.parse("3"), Error, `illegal syntax: "[numerator]/[denominator]" required`);
+  assertThrows(
+    () => Fraction.parse("3"),
+    Error,
+    `illegal syntax: "[numerator]/[denominator]" required`,
+  );
 });
 
 Deno.test("parse: non-numeric parts throw", () => {
-  assertThrows(() => Fraction.parse("a / 4"), Error, "non-numeric numerator/denominator");
+  assertThrows(
+    () => Fraction.parse("a / 4"),
+    Error,
+    "non-numeric numerator/denominator",
+  );
+});
+
+Deno.test("cancel reduces fraction", () => {
+  const fraction = new Fraction(2, 4);
+  fraction.cancel();
+  assertEquals(fraction.toString(), "1/2");
+});
+
+Deno.test("constructor reduces fraction automatically", () => {
+  const fraction = new Fraction(6, 9);
+  assertEquals(fraction.toString(), "2/3");
+});
+
+Deno.test("parse reduces fraction automatically", () => {
+  const fraction = Fraction.parse("8 / 12");
+  assertEquals(fraction.toString(), "2/3");
+});
+
+Deno.test("addition result is reduced automatically", () => {
+  const left = new Fraction(1, 6);
+  const right = new Fraction(1, 6);
+
+  left.add(right);
+
+  assertEquals(left.toString(), "1/3");
+});
+
+Deno.test("multiplication result is reduced automatically", () => {
+  const left = new Fraction(2, 3);
+  const right = new Fraction(3, 4);
+
+  left.multiply(right);
+
+  assertEquals(left.toString(), "1/2");
 });
